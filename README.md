@@ -1,7 +1,7 @@
 # multi-arch-os-bazel-travisci
 bazel build pipelines  multi-os multi-arch linux osx win travis virtualenvs
 
-[![Build Status](https://travis-ci.com/githubfoam/multi-arch-os-bazel-travisci.svg?branch=dev)](https://travis-ci.com/githubfoam/multi-arch-os-bazel-travisci)  
+[![Build Status](https://travis-ci.com/githubfoam/multi-arch-os-bazel-travisci.svg?branch=master)](https://travis-ci.com/githubfoam/multi-arch-os-bazel-travisci)  
 
 ~~~~
 
