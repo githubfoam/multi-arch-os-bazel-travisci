@@ -1,0 +1,307 @@
+---
+sudo: required
+
+env:
+  global:
+  - VAGRANT_VERSION="2.2.9"
+  - OSQUERY_VERSION="2.2.9"
+notifications:
+  slack:
+    on_failure: always
+
+
+fleet_script_bazel_win_tasks : &fleet_script_bazel_win_tasks
+      script:
+          - echo "============================================="
+          - echo "=============Installing bazel chocolatey=============="
+          - choco install bazel
+          - bazel version
+          - echo "============================================="
+fleet_script_bazel_win_tasks_scoop : &fleet_script_bazel_win_tasks_scoop
+      script:
+          - echo "============================================="
+          - echo "=============Installing bazel scoop=============="
+          - iex (new-object net.webclient).downloadstring('https://get.scoop.sh')
+          - scoop install bazel
+          - echo "============================================="
+fleet_script_bazel_macos_tasks : &fleet_script_bazel_macos_tasks
+      script:
+          - echo "============================================="
+          - echo "=============Installing Bazel=============="
+          - /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+          - brew tap bazelbuild/tap
+          - brew install bazelbuild/tap/bazel
+          - bazel --version
+          - echo "============================================="
+fleet_script_bazel_tasks : &fleet_script_bazel_tasks
+      script:
+          - echo "============================================="
+          - echo "=============Installing Bazel=============="
+          - sudo  apt install curl
+          - sudo curl https://bazel.build/bazel-release.pub.gpg | sudo apt-key add -
+          - echo "deb [arch=amd64] https://storage.googleapis.com/bazel-apt stable jdk1.8" | sudo tee /etc/apt/sources.list.d/bazel.list
+          - sudo apt update && sudo apt install bazel -y
+          - bazel version
+          - echo "============================================="
+
+
+fleet_script_tasks : &fleet_script_tasks
+      script:
+        - python --version
+fleet_install_tasks : &fleet_install_tasks
+      install:
+        - pip install -r requirements.txt
+
+
+matrix:
+  fast_finish: true
+  include:
+
+#==============================================================================
+# bionic  amd64 arm64 ppc64le s390x
+#==============================================================================
+    - name: "Python 3.7 on bionic"
+      os: linux
+      arch: amd64
+      dist: bionic
+      language: python
+      python: 3.7
+      before_install:
+        - pip3 install virtualenv
+        - virtualenv -p $(which python3) ~venvpy3
+        - source ~venvpy3/bin/activate
+      <<: *fleet_install_tasks
+      <<: *fleet_script_tasks
+      <<: *fleet_script_bazel_tasks
+      after_success:
+        - deactivate
+
+    # - name: "Python 3.7 on bionic arm64" # package architecture (amd64) does not match system (arm64)
+    #   os: linux
+    #   arch: arm64
+    #   dist: bionic
+    #   language: python
+    #   python: 3.7
+    #   # env:
+    #   #   - LIB_PATH="/usr/bin/shared/x86_64/v1"
+    #   # compiler:
+    #   #  - gcc
+    #   #  - clang
+    #   before_install:
+    #     - pip3 install virtualenv
+    #     - virtualenv -p $(which python3) ~venvpy3
+    #     - source ~venvpy3/bin/activate
+    #   <<: *fleet_install_tasks
+    #   <<: *fleet_script_tasks
+    #   <<: *fleet_script_bazel_tasks
+    #   after_success:
+    #     - deactivate
+    #
+    # - name: "Python 3.7 on bionic ppc64le" #Unable to locate package osquery
+    #   os: linux
+    #   arch: ppc64le
+    #   dist: bionic
+    #   language: python
+    #   python: 3.7
+    #   # env:
+    #   #   - LIB_PATH="/usr/bin/shared/x86_64/v1"
+    #   # compiler:
+    #   #  - gcc
+    #   #  - clang
+    #   before_install:
+    #     - pip3 install virtualenv
+    #     - virtualenv -p $(which python3) ~venvpy3
+    #     - source ~venvpy3/bin/activate
+    #   <<: *fleet_install_tasks
+    #   <<: *fleet_script_tasks
+    #   <<: *fleet_script_bazel_tasks
+    #   after_success:
+    #     - deactivate
+    #
+    # - name: "Python 3.7 on bionic s390x" #Unable to locate package osquery
+    #   os: linux
+    #   arch: s390x
+    #   dist: bionic
+    #   language: python
+    #   python: 3.7
+    #   # env:
+    #   #   - LIB_PATH="/usr/bin/shared/x86_64/v1"
+    #   # compiler:
+    #   #  - gcc
+    #   #  - clang
+    #   before_install:
+    #     - pip3 install virtualenv
+    #     - virtualenv -p $(which python3) ~venvpy3
+    #     - source ~venvpy3/bin/activate
+    #   <<: *fleet_install_tasks
+    #   <<: *fleet_script_tasks
+    #   <<: *fleet_script_bazel_tasks
+    #   after_success:
+    #     - deactivate
+#==============================================================================
+# xenial  amd64 arm64 ppc64le s390x
+#==============================================================================
+    - name: "Python 2.7 on xenial"
+      os: linux
+      arch: amd64
+      dist: xenial
+      language: python
+      python: 2.7
+      before_install:
+        - pip install virtualenv
+        - virtualenv -p $(which python2) ~venvpy2
+        - source ~venvpy2/bin/activate
+      <<: *fleet_install_tasks
+      <<: *fleet_script_tasks
+      <<: *fleet_script_bazel_tasks
+      <<: *fleet_script_bazel_tasks
+      after_success:
+        - deactivate
+
+    # - name: "Python 3.7 on xenial arm64"
+    #   os: linux
+    #   arch: arm64
+    #   dist: xenial
+    #   language: python
+    #   python: 3.7
+    #   # env:
+    #   #   - LIB_PATH="/usr/bin/shared/x86_64/v1"
+    #   # compiler:
+    #   #  - gcc
+    #   #  - clang
+    #   before_install:
+    #     - pip3 install virtualenv
+    #     - virtualenv -p $(which python3) ~venvpy3
+    #     - source ~venvpy3/bin/activate
+    #   <<: *fleet_install_tasks
+    #   <<: *fleet_script_tasks
+    #   <<: *fleet_script_bazel_tasks
+    #   after_success:
+    #     - deactivate
+    #
+    # - name: "Python 3.7 on xenial ppc64le" #Unable to locate package osquery
+    #   os: linux
+    #   arch: ppc64le
+    #   dist: xenial
+    #   language: python
+    #   python: 3.7
+    #   # env:
+    #   #   - LIB_PATH="/usr/bin/shared/x86_64/v1"
+    #   # compiler:
+    #   #  - gcc
+    #   #  - clang
+    #   before_install:
+    #     - pip3 install virtualenv
+    #     - virtualenv -p $(which python3) ~venvpy3
+    #     - source ~venvpy3/bin/activate
+    #   <<: *fleet_install_tasks
+    #   <<: *fleet_script_tasks
+    #   <<: *fleet_script_bazel_tasks
+    #   after_success:
+    #     - deactivate
+    #
+    # - name: "Python 3.7 on xenial s390x" #Unable to locate package osquery
+    #   os: linux
+    #   arch: s390x
+    #   dist: xenial
+    #   language: python
+    #   python: 3.7
+    #   # env:
+    #   #   - LIB_PATH="/usr/bin/shared/x86_64/v1"
+    #   # compiler:
+    #   #  - gcc
+    #   #  - clang
+    #   before_install:
+    #     - pip3 install virtualenv
+    #     - virtualenv -p $(which python3) ~venvpy3
+    #     - source ~venvpy3/bin/activate
+    #   <<: *fleet_install_tasks
+    #   <<: *fleet_script_tasks
+    #   <<: *fleet_script_bazel_tasks
+    #   after_success:
+    #     - deactivate
+
+#==============================================================================
+# macOS  xcode10.2 axcode9.4
+#==============================================================================
+
+    - name: "Python 2.7.17 on macOS xcode10.2"
+      os: osx
+      osx_image: xcode10.2
+      language: shell
+      before_install:
+        - pip install virtualenv
+        - virtualenv -p $(which python2) ~venvpy2
+        - source ~venvpy2/bin/activate
+      <<: *fleet_install_tasks
+      <<: *fleet_script_tasks
+      <<: *fleet_script_bazel_macos_tasks
+      after_success:
+        - deactivate
+
+    - name: "Python 3.7.5 on macOS xcode10.2"
+      os: osx
+      osx_image: xcode10.2
+      language: shell
+      before_install:
+        - pip3 install virtualenv
+        - virtualenv -p $(which python3) ~venvpy3
+        - source ~venvpy3/bin/activate
+      <<: *fleet_install_tasks
+      <<: *fleet_script_tasks
+      <<: *fleet_script_bazel_macos_tasks
+      after_success:
+        - deactivate
+
+    - name: "Python 3.7.5 on macOS xcode9.4 "
+      os: osx
+      osx_image: xcode9.4
+      language: shell
+      before_install:
+        - pip3 install virtualenv
+        - virtualenv -p $(which python3) ~venvpy3
+        - source ~venvpy3/bin/activate
+      <<: *fleet_install_tasks
+      <<: *fleet_script_tasks
+      <<: *fleet_script_bazel_macos_tasks
+      after_success:
+        - deactivate
+
+
+#==============================================================================
+# windows
+#==============================================================================
+
+
+    - name: "Python 3.8 on Windows"
+      os: windows
+      language: shell
+      env:
+        - PATH=/c/Python38:/c/Python38/Scripts:$PATH
+      before_install:
+        - choco install python --version 3.8.1
+        - pip install virtualenv
+        - virtualenv $HOME/venv
+        - source $HOME/venv/Scripts/activate
+      <<: *fleet_install_tasks
+      <<: *fleet_script_tasks
+      <<: *fleet_script_bazel_win_tasks
+      # <<: *fleet_script_bazel_win_tasks_scoop
+      after_success:
+        - deactivate
+
+    - name: "Python 3.7 on Windows"
+      os: windows
+      language: shell
+      env: PATH=/c/Python37:/c/Python37/Scripts:$PATH
+      before_install:
+        - choco install python --version 3.7.3
+        - python -m pip install virtualenv
+        - virtualenv $HOME/venv
+        - source $HOME/venv/Scripts/activate
+      <<: *fleet_install_tasks
+      <<: *fleet_script_tasks
+      <<: *fleet_script_bazel_win_tasks
+      # <<: *fleet_script_bazel_win_tasks_scoop
+      after_success:
+        - deactivate
