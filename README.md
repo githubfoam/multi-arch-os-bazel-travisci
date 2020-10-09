@@ -5,6 +5,7 @@ bazel build pipelines  multi-os multi-arch linux osx win travis virtualenvs
 
 ~~~~
 
+Python 3.7 on focal
 Python 3.7 on bionic
 Python 2.7 on xenial
 
