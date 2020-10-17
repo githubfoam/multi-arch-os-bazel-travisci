@@ -23,11 +23,8 @@ Installing Packages on macOS
 https://docs.travis-ci.com/user/installing-dependencies/#installing-packages-on-macos
 
 <https://travis-ci.community/c/environments/windows>
-Building a Python Project
-https://docs.travis-ci.com/user/languages/python/
-Build Environment Overview
-https://docs.travis-ci.com/user/reference/overview/
 
+https://docs.bazel.build/versions/3.6.0/install.html
 
 https://brew.sh/
 
